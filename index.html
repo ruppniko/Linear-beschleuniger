@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>LINAC Game</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f9f9f9;
+    }
+    canvas {
+      border: 1px solid #333;
+      background: #fff;
+      display: block;
+      margin: 20px auto;
+    }
+    h1 {
+      color: darkmagenta;
+    }
+    button {
+      padding: 8px 16px;
+      margin-top: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 Hochfrequenz-Linearbeschleuniger (LINAC) – Spiel</h1>
+  <p>Klicke auf eine Driftröhre, um ihre Polung zu wechseln!</p>
+  <canvas id="linacCanvas" width="1000" height="200"></canvas>
+  <p><strong>Punkte:</strong> <span id="score">0</span> | <strong>Highscore:</strong> <span id="highscore">0</span></p>
+  <div class="controls">
+    <button onclick="reset()">Reset</button>
+    <button onclick="switchAllPolarities()">Alle Polaritäten wechseln</button>
+    <label><input type="checkbox" id="autoPol"> Auto-Polung aktivieren (2 Hz)</label><br>
+    <label>Röhren-Positionen (Pixel, durch Komma getrennt):<br>
+      <input type="text" id="tubePositions" value="100,200,300,400,500,600" size="50">
+      <button onclick="updateTubePositions()">Setzen</button>
+    </label>
+  </div>
+  <br>
+
+  <script>
+    const canvas = document.getElementById("linacCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const tubeCount = 4;
+    const tubeWidth = 20; // kürzere Röhren
+    const gapWidth = 100; // Abstand für Beschleunigungsstrecke
+    const tubeHeight = 80;
+    let tubes = [];
+
+    const offsetX = 100;
+
+    let particle = {
+      x: offsetX - 20,
+      y: canvas.height / 2,
+      radius: 10,
+      v: 1
+    };
+
+    let score = 0;
+    let highscore = localStorage.getItem("linacHighscore") || 0;
+    document.getElementById("highscore").textContent = highscore;
+
+    function createTubes(positions) {
+      tubes = positions.map((pos, i) => ({
+        x: parseInt(pos),
+        polarity: i % 2 === 0 ? -1 : 1
+      }));
+    }
+    createTubes(document.getElementById("tubePositions").value.split(","));
+
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      tubes.forEach((tube) => {
+        if (
+          mx >= tube.x &&
+          mx <= tube.x + tubeWidth &&
+          my >= particle.y - tubeHeight / 2 &&
+          my <= particle.y + tubeHeight / 2
+        ) {
+          tube.polarity *= -1;
+        }
+      });
+    });
+
+    function update() {
+      tubes.forEach((tube, i) => {
+        const nextX = i < tubes.length - 1 ? tubes[i + 1].x : canvas.width;
+        const accelZoneStart = tube.x + tubeWidth;
+        const accelZoneEnd = nextX;
+
+        // Bestimme, ob das Teilchen im Beschleunigungsbereich zwischen zwei Röhren ist
+        if (particle.x >= accelZoneStart && particle.x <= accelZoneEnd) {
+          // Linke und rechte Röhre im aktuellen Beschleunigungsbereich
+          const leftPolarity = tube.polarity;
+          const rightPolarity = i < tubes.length - 1 ? tubes[i + 1].polarity : null;
+
+          if (rightPolarity !== null) {
+            const distance = Math.abs(nextX - (tube.x + tubeWidth));
+            // Normiere die Beschleunigung auf eine Basisdistanz, z.B. 100px
+            const baseAccel = 0.05;
+            const baseDistance = 100;
+            const accel = baseAccel * (baseDistance/distance);
+
+            if (leftPolarity === 1 && rightPolarity === -1) {
+              // Beschleunigung: links positiv, rechts negativ
+              particle.v += accel;
+            } else if (leftPolarity === -1 && rightPolarity === 1) {
+              // Abbremsen: links negativ, rechts positiv
+              particle.v -= accel;
+            }
+            // Sonst keine Änderung
+          }
+        }
+      });
+
+      particle.x += particle.v;
+      // Allow negative velocity, but clamp to a minimum (e.g., -10)
+      if (particle.v < -10) particle.v = -10;
+
+      score = Math.floor(particle.v * 100);
+      document.getElementById("score").textContent = score;
+
+      if (particle.x > canvas.width - 20) {
+        if (score > highscore) {
+          localStorage.setItem("linacHighscore", score);
+          alert("🏆 Neuer Highscore: " + score);
+        } else {
+          alert("🏍️ Spiel beendet! Dein Score: " + score);
+        }
+        reset();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Teilchenquelle
+      ctx.fillStyle = "magenta";
+      ctx.fillRect(offsetX - 60, particle.y - 30, 40, 60);
+
+      // Röhren
+      tubes.forEach((tube) => {
+        ctx.fillStyle = tube.polarity === -1 ? "#cce5ff" : "#ffcccc";
+        ctx.fillRect(tube.x, particle.y - tubeHeight / 2, tubeWidth, tubeHeight);
+        ctx.strokeStyle = "black";
+        ctx.strokeRect(tube.x, particle.y - tubeHeight / 2, tubeWidth, tubeHeight);
+
+        ctx.fillStyle = "black";
+        ctx.font = "20px sans-serif";
+        ctx.fillText(tube.polarity === 1 ? "+" : "-", tube.x + tubeWidth / 2 - 5, particle.y + 7);
+      });
+
+      // Teilchen
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.fillStyle = "white";
+      ctx.font = "14px sans-serif";
+      ctx.fillText("+", particle.x - 4, particle.y + 5);
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function reset() {
+      particle.x = offsetX - 20;
+      particle.v = 1;
+      score = 0;
+      document.getElementById("score").textContent = score;
+      document.getElementById("highscore").textContent = localStorage.getItem("linacHighscore");
+      // Wenn Auto-Polung aktiviert ist, sofort starten
+      if (document.getElementById("autoPol").checked) {
+        tubes.forEach((tube) => {
+          tube.polarity *= -1;
+        });
+      }
+    }
+
+    function updateTubePositions() {
+      const values = document.getElementById("tubePositions").value.split(",");
+      createTubes(values);
+    }
+
+    function switchAllPolarities() {
+      tubes.forEach(tube => tube.polarity *= -1);
+    }
+
+    setInterval(() => {
+      if (document.getElementById("autoPol").checked) {
+        tubes.forEach((tube) => {
+          tube.polarity *= -1;
+        });
+      }
+    }, 500); // 2 Hz => alle 500 ms
+
+    loop();
+  </script>
+</body>
+</html>
