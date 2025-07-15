@@ -124,6 +124,42 @@
       draggingTube = null;
     });
 
+    // Touch-Events für mobile Geräte
+    canvas.addEventListener("touchstart", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const mx = touch.clientX - rect.left;
+      const my = touch.clientY - rect.top;
+      for (let tube of tubes) {
+        if (
+          mx >= tube.x &&
+          mx <= tube.x + tubeWidth &&
+          my >= particle.y - tubeHeight / 2 &&
+          my <= particle.y + tubeHeight / 2
+        ) {
+          draggingTube = tube;
+          dragOffsetX = mx - tube.x;
+          break;
+        }
+      }
+      e.preventDefault();
+    }, { passive: false });
+
+    canvas.addEventListener("touchmove", (e) => {
+      if (draggingTube) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const mx = touch.clientX - rect.left;
+        draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
+      }
+      e.preventDefault();
+    }, { passive: false });
+
+    canvas.addEventListener("touchend", (e) => {
+      draggingTube = null;
+      e.preventDefault();
+    }, { passive: false });
+
     function addTube() {
       // Füge eine neue Röhre rechts an
       const lastX = tubes.length > 0 ? tubes[tubes.length - 1].x + tubeWidth + 80 : offsetX;
