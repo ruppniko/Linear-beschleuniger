@@ -30,7 +30,7 @@
   <h1>🎮 Hochfrequenz-Linearbeschleuniger (LINAC) – Simulator</h1>
   <p>Klicke auf eine Driftröhre, um ihre Polung zu wechseln, oder die position zu ändern!</p>
   <canvas id="linacCanvas" width="1000" height="200"></canvas>
-  <p><strong>Punkte:</strong> <span id="score">0</span> | <strong>Highscore:</strong> <span id="highscore">0</span></p>
+  <p><strong>Geschwindigkeit:</strong> <span id="score">0</span> | <strong>Highscore:</strong> <span id="highscore">0</span></p>
   <div class="controls">
     <button onclick="reset()">Reset</button>
     <button onclick="switchAllPolarities()">Alle Polaritäten wechseln</button>
@@ -62,7 +62,7 @@
     };
 
     let score = 0;
-    let highscore = localStorage.getItem("linacHighscore") || 0;
+    let highscore = parseInt(localStorage.getItem("linacHighscore")) || 0;
     document.getElementById("highscore").textContent = highscore;
 
     // Initialisiere Röhren
@@ -137,6 +137,10 @@
       if (tubes.length > 0) tubes.pop();
     }
 
+    let autoPolFreq = 2; // Hz
+    let autoPolFrameCount = 0;
+    let framesPerSwitch = Math.round((1 / autoPolFreq) * 60 / 2); // 60 FPS, 2x pro Periode
+
     function update() {
       tubes.forEach((tube, i) => {
         const nextX = i < tubes.length - 1 ? tubes[i + 1].x : canvas.width;
@@ -168,6 +172,17 @@
         }
       });
 
+      // Auto-Polung über Frame-Zähler
+      if (document.getElementById("autoPol").checked) {
+        autoPolFrameCount++;
+        if (autoPolFrameCount >= framesPerSwitch) {
+          tubes.forEach((tube) => {
+            tube.polarity *= -1;
+          });
+          autoPolFrameCount = 0;
+        }
+      }
+
       particle.x += particle.v;
       // Allow negative velocity, but clamp to a minimum (e.g., -10)
       if (particle.v < -10) particle.v = -10;
@@ -179,6 +194,7 @@
         if (score > highscore) {
           localStorage.setItem("linacHighscore", score);
           alert("🏆 Neuer Highscore: " + score);
+          highscore = score;
         }
         reset();
       }
@@ -219,24 +235,6 @@
       requestAnimationFrame(loop);
     }
 
-    // --- Auto-Polung Intervall-Handling ---
-    let autoPolInterval = null;
-    let autoPolFreq = 2; // Hz
-    function startAutoPol() {
-      if (autoPolInterval) clearInterval(autoPolInterval);
-      const freqInput = document.getElementById("autoPolFreq");
-      autoPolFreq = parseFloat(freqInput.value) || 2;
-      const interval = 1000 / autoPolFreq / 2; // Umschalten: 2x pro Periode
-      autoPolInterval = setInterval(() => {
-        if (document.getElementById("autoPol").checked) {
-          tubes.forEach((tube) => {
-            tube.polarity *= -1;
-          });
-        }
-      }, interval);
-    }
-    // ---
-
     function resetTubePolarities() {
       // Setze Röhren auf Start-Polarität (abwechselnd -1/+1)
       tubes.forEach((tube, i) => {
@@ -249,13 +247,12 @@
       particle.v = 1;
       score = 0;
       document.getElementById("score").textContent = score;
-      document.getElementById("highscore").textContent = localStorage.getItem("linacHighscore");
+      highscore = parseInt(localStorage.getItem("linacHighscore")) || 0;
+      document.getElementById("highscore").textContent = highscore;
       // Nur wenn Auto-Polung aktiv ist, Phase zurücksetzen
       if (document.getElementById("autoPol").checked) {
         resetTubePolarities();
-        startAutoPol();
-      } else {
-        if (autoPolInterval) clearInterval(autoPolInterval);
+        autoPolFrameCount = 0;
       }
     }
 
@@ -263,17 +260,12 @@
       tubes.forEach(tube => tube.polarity *= -1);
     }
 
-    // Beim Laden: Auto-Polung ggf. starten
-    if (document.getElementById("autoPol").checked) {
-      startAutoPol();
-    }
-
     // Checkbox-Listener für Auto-Polung
     document.getElementById("autoPol").addEventListener("change", function() {
       if (this.checked) {
-        startAutoPol();
+        // startAutoPol();
       } else {
-        if (autoPolInterval) clearInterval(autoPolInterval);
+        // clearInterval(autoPolInterval);
       }
     });
 
@@ -282,12 +274,14 @@
     const autoPolFreqLabel = document.getElementById("autoPolFreqLabel");
     autoPolFreqSlider.addEventListener("input", function() {
       autoPolFreqLabel.textContent = parseFloat(this.value).toFixed(1) + " Hz";
-      if (document.getElementById("autoPol").checked) {
-        startAutoPol();
-      }
+      autoPolFreq = parseFloat(this.value) || 2;
+      framesPerSwitch = Math.round((1 / autoPolFreq) * 60 / 2);
+      autoPolFrameCount = 0; // Phase neu starten
     });
-    // Initialisiere Label
-    autoPolFreqLabel.textContent = parseFloat(autoPolFreqSlider.value).toFixed(1) + " Hz";
+    // Initialisiere Label und Frames
+    autoPolFreq = parseFloat(autoPolFreqSlider.value) || 2;
+    framesPerSwitch = Math.round((1 / autoPolFreq) * 60 / 2);
+    autoPolFrameCount = 0;
 
     loop();
   </script>
