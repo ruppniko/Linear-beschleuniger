@@ -44,7 +44,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      width: 100%;
+      width: 100vw;
       display: flex;
       justify-content: space-between;
       align-items: stretch;
@@ -65,7 +65,7 @@
       justify-content: flex-end;
     }
     .middle-controls {
-      width: 50%;
+      flex: 1;
       display: flex;
       flex-direction: row;
       justify-content: center;
@@ -99,11 +99,15 @@
     }
     @media (min-width: 700px) {
       .mobile-controls-wrapper {
-        position: static;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100vw;
         flex-direction: row;
         justify-content: center;
-        padding: 10px 0;
-        background: none;
+        padding: 10px;
+        background: linear-gradient(to top, #f9f9f9 90%, transparent 100%);
       }
       .left-controls, .right-controls, .middle-controls {
         width: auto;
