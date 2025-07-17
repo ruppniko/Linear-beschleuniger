@@ -294,46 +294,54 @@ canvas.addEventListener("mouseup", (e) => {
 });
 // Remove the old click event for polarity toggle (handled in mouseup now)
     // Touch: single tap toggles polarity, drag moves tube
-    canvas.addEventListener("touchstart", (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      const mx = touch.clientX - rect.left;
-      const my = touch.clientY - rect.top;
-      touchStartX = mx;
-      touchStartY = my;
-      touchMoved = false;
-      for (let tube of tubes) {
-        if (
-          mx >= tube.x &&
-          mx <= tube.x + tubeWidth &&
-          my >= particle.y - tubeHeight / 2 &&
-          my <= particle.y + tubeHeight / 2
-        ) {
-          draggingTube = tube;
-          dragOffsetX = mx - tube.x;
-          break;
-        }
-      }
-      e.preventDefault();
-    }, { passive: false });
-    canvas.addEventListener("touchmove", (e) => {
-      if (draggingTube) {
-        const rect = canvas.getBoundingClientRect();
-        const touch = e.touches[0];
-        const mx = touch.clientX - rect.left;
-        if (Math.abs(mx - touchStartX) > 5) touchMoved = true;
-        draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
-      }
-      e.preventDefault();
-    }, { passive: false });
-    canvas.addEventListener("touchend", (e) => {
-      if (!touchMoved && draggingTube) {
-        // Treat as tap: toggle polarity
-        draggingTube.polarity *= -1;
-      }
-      draggingTube = null;
-      e.preventDefault();
-    }, { passive: false });
+canvas.addEventListener("touchstart", (e) => {
+  if (e.touches.length !== 1) return; // Only single touch
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+  const mx = touch.clientX - rect.left;
+  const my = touch.clientY - rect.top;
+  touchStartX = mx;
+  touchStartY = my;
+  touchMoved = false;
+  draggingTube = null;
+  for (let tube of tubes) {
+    if (
+      mx >= tube.x &&
+      mx <= tube.x + tubeWidth &&
+      my >= particle.y - tubeHeight / 2 &&
+      my <= particle.y + tubeHeight / 2
+    ) {
+      draggingTube = tube;
+      dragOffsetX = mx - tube.x;
+      break;
+    }
+  }
+  e.preventDefault();
+}, { passive: false });
+canvas.addEventListener("touchmove", (e) => {
+  if (!draggingTube || e.touches.length !== 1) return;
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+  const mx = touch.clientX - rect.left;
+  if (Math.abs(mx - touchStartX) > 5) touchMoved = true;
+  draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
+  e.preventDefault();
+}, { passive: false });
+canvas.addEventListener("touchend", (e) => {
+  // Only handle if a tube was selected
+  if (draggingTube) {
+    if (!touchMoved) {
+      // Tap: toggle polarity
+      draggingTube.polarity *= -1;
+    }
+    // Always clear dragging state
+    draggingTube = null;
+  }
+  touchStartX = null;
+  touchStartY = null;
+  touchMoved = false;
+  e.preventDefault();
+}, { passive: false });
     // --- Button-Handler ---
     document.getElementById("resetBtn").onclick = function() {
       reset();
