@@ -247,7 +247,7 @@
       }
     }
     initTubes();
-    // --- Interaktivität für Röhren: Klick/Touch/Drag ---
+// --- Interaktivität für Röhren: Klick/Touch/Drag wie in der alten Version ---
 let draggingTube = null;
 let dragOffsetX = 0;
 let mouseDownTube = null;
@@ -256,6 +256,7 @@ let touchStartX = null;
 let touchStartY = null;
 let touchMoved = false;
 
+// Maus: Drag/Click
 canvas.addEventListener("mousedown", (e) => {
   const rect = canvas.getBoundingClientRect();
   const mx = e.clientX - rect.left;
@@ -292,10 +293,9 @@ canvas.addEventListener("mouseup", (e) => {
   mouseDownTube = null;
   mouseMoved = false;
 });
-// Remove the old click event for polarity toggle (handled in mouseup now)
-    // Touch: single tap toggles polarity, drag moves tube
+
+// Touch: single tap toggles polarity, drag moves tube
 canvas.addEventListener("touchstart", (e) => {
-  if (e.touches.length !== 1) return; // Only single touch
   const rect = canvas.getBoundingClientRect();
   const touch = e.touches[0];
   const mx = touch.clientX - rect.left;
@@ -316,31 +316,22 @@ canvas.addEventListener("touchstart", (e) => {
       break;
     }
   }
-  e.preventDefault();
 }, { passive: false });
 canvas.addEventListener("touchmove", (e) => {
-  if (!draggingTube || e.touches.length !== 1) return;
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  const mx = touch.clientX - rect.left;
-  if (Math.abs(mx - touchStartX) > 5) touchMoved = true;
-  draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
-  e.preventDefault();
+  if (draggingTube) {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const mx = touch.clientX - rect.left;
+    if (Math.abs(mx - touchStartX) > 5) touchMoved = true;
+    draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
+  }
 }, { passive: false });
 canvas.addEventListener("touchend", (e) => {
-  // Only handle if a tube was selected
-  if (draggingTube) {
-    if (!touchMoved) {
-      // Tap: toggle polarity
-      draggingTube.polarity *= -1;
-    }
-    // Always clear dragging state
-    draggingTube = null;
+  if (!touchMoved && draggingTube) {
+    // Treat as tap: toggle polarity
+    draggingTube.polarity *= -1;
   }
-  touchStartX = null;
-  touchStartY = null;
-  touchMoved = false;
-  e.preventDefault();
+  draggingTube = null;
 }, { passive: false });
     // --- Button-Handler ---
     document.getElementById("resetBtn").onclick = function() {
