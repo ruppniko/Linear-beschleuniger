@@ -261,10 +261,30 @@ let touchStartY = null;
 let touchMoved = false;
 
 // --- Maus: Drag/Click wie in der alten Version ---
-canvas.addEventListener("mousedown", (e) => {
+// --- Utility: Map event coordinates to canvas internal size ---
+function getCanvasRelativeCoords(e, isTouch = false) {
   const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
+  let clientX, clientY;
+  if (isTouch) {
+    const touch = e.touches[0] || e.changedTouches[0];
+    clientX = touch.clientX;
+    clientY = touch.clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  // Scale to canvas internal size
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
+// --- Maus: Drag/Click wie in der alten Version ---
+canvas.addEventListener("mousedown", (e) => {
+  const { x: mx, y: my } = getCanvasRelativeCoords(e);
   for (let tube of tubes) {
     if (
       mx >= tube.x &&
@@ -280,8 +300,7 @@ canvas.addEventListener("mousedown", (e) => {
 });
 canvas.addEventListener("mousemove", (e) => {
   if (draggingTube) {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
+    const { x: mx } = getCanvasRelativeCoords(e);
     draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
   }
 });
@@ -291,11 +310,7 @@ canvas.addEventListener("mouseup", () => {
 
 // --- Touch: Drag/Drop wie in der alten Version ---
 canvas.addEventListener("touchstart", (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  // Use clientX/clientY for correct mapping to canvas
-  const mx = touch.clientX - rect.left;
-  const my = touch.clientY - rect.top;
+  const { x: mx, y: my } = getCanvasRelativeCoords(e, true);
   for (let tube of tubes) {
     if (
       mx >= tube.x &&
@@ -312,9 +327,7 @@ canvas.addEventListener("touchstart", (e) => {
 }, { passive: false });
 canvas.addEventListener("touchmove", (e) => {
   if (draggingTube) {
-    const rect = canvas.getBoundingClientRect();
-    const touch = e.touches[0];
-    const mx = touch.clientX - rect.left;
+    const { x: mx } = getCanvasRelativeCoords(e, true);
     draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
   }
   e.preventDefault();
@@ -326,9 +339,7 @@ canvas.addEventListener("touchend", (e) => {
 
 // --- Click: Toggle polarity on tap (like old version) ---
 canvas.addEventListener("click", (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
+  const { x: mx, y: my } = getCanvasRelativeCoords(e);
   for (let tube of tubes) {
     if (
       mx >= tube.x &&
