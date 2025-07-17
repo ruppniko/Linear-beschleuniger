@@ -10,193 +10,290 @@
       text-align: center;
       background: #f9f9f9;
       margin: 0;
-      padding-bottom: 120px;
+      padding: 0;
     }
-    canvas {
-      border: 1px solid #333;
-      background: #fff;
-      display: block;
-      margin: 20px auto;
-      touch-action: none;
+    .main-wrapper {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 0 32px 0;
     }
     h1 {
-      color: darkmagenta;
+      color: #888;
       font-size: 1.5em;
-      margin: 10px;
+      margin: 24px 0 10px 0;
+      font-weight: 400;
+      letter-spacing: 1px;
     }
-    p {
-      margin: 10px;
-      font-size: 1em;
-    }
-    button {
-      font-size: 1.2em;
-      border-radius: 10px;
-      border: none;
-      padding: 14px 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      transition: background 0.2s;
-    }
-    button:active {
-      background: #ddd;
-    }
-    .mobile-controls-wrapper {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 100vw;
-      display: flex;
-      justify-content: space-between;
-      align-items: stretch;
-      background: linear-gradient(to top, #f9f9f9 90%, transparent 100%);
-      padding: 10px;
+    .sim-canvas-box, .graph-canvas-box {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto 18px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px #0001, 0 0 0 2px #e0e0e0;
+      padding: 12px 0 12px 0;
       box-sizing: border-box;
-      z-index: 1000;
+      position: relative;
     }
-    .left-controls, .right-controls {
-      width: 25%;
+    #linacCanvas, #velocityGraph {
+      display: block;
+      width: 98%;
+      max-width: 680px;
+      margin: 0 auto;
+      background: #fff;
+      border: none;
+    }
+    .graph-label-y {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%) rotate(-90deg);
+      color: #1e88e5;
+      font-size: 1em;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+    }
+    .graph-label-x {
+      color: #1e88e5;
+      font-size: 1em;
+      margin-top: 2px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    .score-row {
+      margin: 10px 0 18px 0;
+      font-size: 1.1em;
+    }
+    .controls-row {
       display: flex;
-      align-items: center;
-    }
-    .left-controls {
-      justify-content: flex-start;
-    }
-    .right-controls {
-      justify-content: flex-end;
-    }
-    .middle-controls {
-      flex: 1;
-      display: flex;
-      flex-direction: row;
+      flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 6px;
+      gap: 18px;
+      margin: 18px 0 0 0;
     }
-    .middle-controls label,
-    .middle-controls input[type="range"],
-    .middle-controls span,
-    .middle-controls button {
-      font-size: 0.8em;
-      padding: 6px 8px;
-    }
-    .reset-btn {
-      background: #ffbdbd;
-      color: #800;
-      width: 100%;
-    }
-    .pol-btn {
-      background: #bbdefb;
-      color: #01579b;
-      width: 100%;
+    .tube-controls {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
     }
     .addtube-btn {
-      background: #c8e6c9;
       color: #1b5e20;
+      background: none;
+      border: none;
+      font-size: 2em;
+      font-weight: bold;
+      line-height: 1;
+      cursor: pointer;
+      margin: 0 2px;
     }
     .removetube-btn {
-      background: #ffe082;
       color: #b28900;
+      background: none;
+      border: none;
+      font-size: 2em;
+      font-weight: bold;
+      line-height: 1;
+      cursor: pointer;
+      margin: 0 2px;
     }
-    @media (min-width: 700px) {
-      .mobile-controls-wrapper {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100vw;
-        flex-direction: row;
-        justify-content: center;
-        padding: 10px;
-        background: linear-gradient(to top, #f9f9f9 90%, transparent 100%);
-      }
-      .left-controls, .right-controls, .middle-controls {
-        width: auto;
-        margin: 0 10px;
-      }
-      .middle-controls {
-        flex-direction: row;
-        gap: 6px;
-      }
-      .middle-controls label,
-      .middle-controls input,
-      .middle-controls span,
-      .middle-controls button {
-        font-size: 1em;
-        padding: 6px 10px;
-      }
+    .auto-label {
+      color: #222;
+      font-size: 1.1em;
+      margin-left: 8px;
+      margin-right: 2px;
+      vertical-align: middle;
+    }
+    .auto-checkbox {
+      width: 22px;
+      height: 22px;
+      accent-color: #ffeb3b;
+      border: 2px solid #ffeb3b;
+      background: #fff;
+      margin-right: 2px;
+      vertical-align: middle;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .slider {
+      width: 120px;
+      accent-color: #222;
+      background: #fff;
+      border: 2px solid #111;
+      border-radius: 8px;
+      height: 8px;
+    }
+    .slider-label {
+      color: #222;
+      font-size: 1.1em;
+      margin-left: 4px;
+    }
+    .main-buttons-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      margin: 32px 0 0 0;
+      gap: 32px;
+    }
+    .circle-btn {
+      width: 110px;
+      height: 110px;
+      border-radius: 55px;
+      border: 5px solid #1e88e5;
+      background: #fff;
+      color: #1e88e5;
+      font-size: 1.1em;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin: 0 auto;
+      box-shadow: 0 2px 8px #0001;
+      transition: border 0.2s, color 0.2s;
+    }
+    .circle-btn.reset {
+      border-color: #1e88e5;
+      color: #1e88e5;
+    }
+    .circle-btn.polarity {
+      border-color: #e53935;
+      color: #e53935;
+    }
+    .circle-btn:active {
+      background: #f0f0f0;
+    }
+    @media (max-width: 800px) {
+      .main-wrapper { max-width: 99vw; }
+      .sim-canvas-box, .graph-canvas-box, #linacCanvas, #velocityGraph { width: 99vw; min-width: 0; max-width: 99vw; }
     }
   </style>
 </head>
 <body>
   <h1>🎮 Hochfrequenz-Linearbeschleuniger (LINAC) – Simulator</h1>
   <p>Klicke oder tippe auf eine Driftröhre, um ihre Polung zu wechseln oder sie zu verschieben.</p>
-  <canvas id="linacCanvas" width="1000" height="200"></canvas>
-  <p><strong>Geschwindigkeit:</strong> <span id="score">0</span> | <strong>Highscore:</strong> <span id="highscore">0</span></p>
 
-  <div class="mobile-controls-wrapper">
-    <div class="left-controls">
-      <button class="reset-btn" onclick="reset()">🔄 Reset</button>
+
+  <div class="main-wrapper">
+    <div class="sim-canvas-box">
+      <canvas id="linacCanvas" width="680" height="120"></canvas>
     </div>
-    <div class="middle-controls">
-      <button class="addtube-btn" onclick="addTube()">＋</button>
-      <button class="removetube-btn" onclick="removeTube()">–</button>
-      <label><input type="checkbox" id="autoPol"> Auto</label>
-      <input type="range" id="autoPolFreq" value="2" min="0.1" max="5" step="0.1" style="width: 70px;">
-      <span id="autoPolFreqLabel">2.0 Hz</span>
+    <div class="graph-canvas-box">
+      <canvas id="velocityGraph" width="680" height="100"></canvas>
     </div>
-    <div class="right-controls">
-      <button class="pol-btn" onclick="switchAllPolarities()">⚡ Polarität</button>
+    <div class="score-row"><strong>Geschwindigkeit:</strong> <span id="score">0</span> | <strong>Highscore:</strong> <span id="highscore">0</span></div>
+    <div class="controls-row">
+      <div class="tube-controls">
+        <span style="font-size:1.1em;">Röhre:</span>
+        <button class="addtube-btn" id="addTubeBtn">＋</button>
+        <button class="removetube-btn" id="removeTubeBtn">–</button>
+      </div>
+      <label class="auto-label"><input type="checkbox" id="autoPol" class="auto-checkbox"> Auto</label>
+      <div class="slider-row">
+        <input type="range" id="autoPolFreq" class="slider" value="2" min="0.1" max="5" step="0.1">
+        <span class="slider-label" id="autoPolFreqLabel">2.0 Hz</span>
+      </div>
+      <label class="auto-label" style="margin-left:10px;"><input type="checkbox" id="showGraph" class="auto-checkbox"> Graph anzeigen</label>
+    </div>
+    <div class="main-buttons-row">
+      <button class="circle-btn reset" id="resetBtn">Reset</button>
+      <button class="circle-btn polarity" id="polBtn">Polarisation wechseln</button>
     </div>
   </div>
 
   <script>
-    // Initialisiere Röhren
     const canvas = document.getElementById("linacCanvas");
     const ctx = canvas.getContext("2d");
-    const tubeCount = 4;
+    const graph = document.getElementById("velocityGraph");
+    const gtx = graph.getContext("2d");
+
+    const offsetX = 100;
     const tubeWidth = 20;
     const gapWidth = 100;
     const tubeHeight = 80;
+    const tubeCount = 4;
     let tubes = [];
-    const offsetX = 100;
-    let particle = {
+
+    const particle = {
       x: offsetX - 20,
       y: canvas.height / 2,
       radius: 10,
       v: 1
     };
+
     let score = 0;
     let highscore = parseInt(localStorage.getItem("linacHighscore")) || 0;
     document.getElementById("highscore").textContent = highscore;
-    for (let i = 0; i < tubeCount; i++) {
-      tubes.push({
-        x: offsetX + i * (tubeWidth + gapWidth),
-        polarity: i % 2 === 0 ? 1 : -1
-      });
+
+    let velocityData = [];
+    let autoPolFreq = 2;
+    let autoPolFrameCount = 0;
+    let framesPerSwitch = Math.round((1 / autoPolFreq) * 60 / 2);
+
+
+    function initTubes() {
+      tubes = [];
+      for (let i = 0; i < tubeCount; i++) {
+        tubes.push({
+          x: offsetX + i * (tubeWidth + gapWidth),
+          polarity: i % 2 === 0 ? 1 : -1
+        });
+      }
     }
-    canvas.addEventListener("click", (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-      let tapped = false;
-      tubes.forEach((tube) => {
-        if (
-          mx >= tube.x &&
-          mx <= tube.x + tubeWidth &&
-          my >= particle.y - tubeHeight / 2 &&
-          my <= particle.y + tubeHeight / 2
-        ) {
-          tube.polarity *= -1;
-          tapped = true;
-        }
-      });
-    });
+    initTubes();
+    // --- Interaktivität für Röhren: Klick/Touch/Drag ---
+let draggingTube = null;
+let dragOffsetX = 0;
+let mouseDownTube = null;
+let mouseMoved = false;
+let touchStartX = null;
+let touchStartY = null;
+let touchMoved = false;
+
+canvas.addEventListener("mousedown", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  mouseMoved = false;
+  for (let tube of tubes) {
+    if (
+      mx >= tube.x &&
+      mx <= tube.x + tubeWidth &&
+      my >= particle.y - tubeHeight / 2 &&
+      my <= particle.y + tubeHeight / 2
+    ) {
+      draggingTube = tube;
+      mouseDownTube = tube;
+      dragOffsetX = mx - tube.x;
+      break;
+    }
+  }
+});
+canvas.addEventListener("mousemove", (e) => {
+  if (draggingTube) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    if (Math.abs(mx - (draggingTube.x + dragOffsetX)) > 2) mouseMoved = true;
+    draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
+  }
+});
+canvas.addEventListener("mouseup", (e) => {
+  if (draggingTube && !mouseMoved) {
+    // Only toggle polarity if it was a click, not a drag
+    draggingTube.polarity *= -1;
+  }
+  draggingTube = null;
+  mouseDownTube = null;
+  mouseMoved = false;
+});
+// Remove the old click event for polarity toggle (handled in mouseup now)
     // Touch: single tap toggles polarity, drag moves tube
-    let touchStartX = null;
-    let touchStartY = null;
-    let touchMoved = false;
-    let draggingTube = null;
-    let dragOffsetX = 0;
     canvas.addEventListener("touchstart", (e) => {
       const rect = canvas.getBoundingClientRect();
       const touch = e.touches[0];
@@ -237,114 +334,140 @@
       draggingTube = null;
       e.preventDefault();
     }, { passive: false });
-    canvas.addEventListener("mousedown", (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-      for (let tube of tubes) {
-        if (
-          mx >= tube.x &&
-          mx <= tube.x + tubeWidth &&
-          my >= particle.y - tubeHeight / 2 &&
-          my <= particle.y + tubeHeight / 2
-        ) {
-          draggingTube = tube;
-          dragOffsetX = mx - tube.x;
-          break;
-        }
-      }
-    });
-    canvas.addEventListener("mousemove", (e) => {
-      if (draggingTube) {
-        const rect = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
-      }
-    });
-    canvas.addEventListener("mouseup", () => {
-      draggingTube = null;
-    });
-    function addTube() {
+    // --- Button-Handler ---
+    document.getElementById("resetBtn").onclick = function() {
+      reset();
+    };
+    document.getElementById("polBtn").onclick = function() {
+      tubes.forEach(tube => tube.polarity *= -1);
+    };
+    document.getElementById("addTubeBtn").onclick = function() {
       // Füge eine neue Röhre rechts an
-      const lastX = tubes.length > 0 ? tubes[tubes.length - 1].x + tubeWidth + 80 : offsetX;
+      const lastX = tubes.length > 0 ? tubes[tubes.length - 1].x + tubeWidth + gapWidth : offsetX;
       tubes.push({
         x: lastX,
         polarity: tubes.length % 2 === 0 ? -1 : 1
       });
-    }
-    function removeTube() {
+    };
+    document.getElementById("removeTubeBtn").onclick = function() {
       if (tubes.length > 0) tubes.pop();
+    };
+
+    function drawVelocityGraph() {
+      const show = document.getElementById("showGraph").checked;
+      graph.style.display = show ? "block" : "none";
+      if (!show) return;
+      gtx.clearRect(0, 0, graph.width, graph.height);
+      // Achsen
+      gtx.strokeStyle = "#ccc";
+      gtx.beginPath();
+      gtx.moveTo(30, 10);
+      gtx.lineTo(30, graph.height - 20);
+      gtx.lineTo(graph.width - 10, graph.height - 20);
+      gtx.stroke();
+
+      if (velocityData.length < 2) return;
+      const maxV = Math.max(...velocityData);
+      const minV = Math.min(...velocityData);
+
+      // Y-Achsen-Beschriftung (vertikal)
+      gtx.save();
+      gtx.translate(10, graph.height / 2);
+      gtx.rotate(-Math.PI / 2);
+      gtx.font = "14px sans-serif";
+      gtx.fillStyle = "#333";
+      gtx.textAlign = "center";
+      gtx.fillText("Geschwindigkeit", 0, 0);
+      gtx.restore();
+
+      // X-Achsen-Beschriftung
+      gtx.font = "14px sans-serif";
+      gtx.fillStyle = "#333";
+      gtx.textAlign = "right";
+      gtx.fillText("Zeit (Frames)", graph.width - 10, graph.height - 2);
+
+      // Min/Max Werte anzeigen
+      gtx.font = "12px sans-serif";
+      gtx.fillStyle = "#1976d2";
+      gtx.textAlign = "left";
+      gtx.fillText(maxV.toFixed(2), 35, 18);
+      gtx.fillText(minV.toFixed(2), 35, graph.height - 22);
+
+      // Graph zeichnen
+      gtx.strokeStyle = "#1976d2";
+      gtx.beginPath();
+      for (let i = 0; i < velocityData.length; i++) {
+        const x = 30 + i;
+        const y = graph.height - 20 - ((velocityData[i] - minV) / (maxV - minV + 0.01)) * (graph.height - 30);
+        if (i === 0) gtx.moveTo(x, y);
+        else gtx.lineTo(x, y);
+      }
+      gtx.stroke();
     }
-    let autoPolFreq = 2; // Hz
-    let autoPolFrameCount = 0;
-    let framesPerSwitch = Math.round((1 / autoPolFreq) * 60 / 2); // 60 FPS, 2x pro Periode
+
     function update() {
-      tubes.forEach((tube, i) => {
+      velocityData.push(particle.v);
+      if (velocityData.length > graph.width - 30) velocityData.shift();
+
+      for (let i = 0; i < tubes.length; i++) {
+        const tube = tubes[i];
         const nextX = i < tubes.length - 1 ? tubes[i + 1].x : canvas.width;
-        const accelZoneStart = tube.x + tubeWidth;
-        const accelZoneEnd = nextX;
-        // Bestimme, ob das Teilchen im Beschleunigungsbereich zwischen zwei Röhren ist
-        if (particle.x >= accelZoneStart && particle.x <= accelZoneEnd) {
-          // Linke und rechte Röhre im aktuellen Beschleunigungsbereich
-          const leftPolarity = tube.polarity;
-          const rightPolarity = i < tubes.length - 1 ? tubes[i + 1].polarity : null;
-          if (rightPolarity !== null) {
-            const distance = Math.abs(nextX - (tube.x + tubeWidth));
-            // Normiere die Beschleunigung auf eine Basisdistanz, z.B. 100px
-            const baseAccel = 0.05;
-            const baseDistance = 100;
-            const accel = baseAccel * (baseDistance/distance);
-            if (leftPolarity === 1 && rightPolarity === -1) {
-              // Beschleunigung: links positiv, rechts negativ
-              particle.v += accel;
-            } else if (leftPolarity === -1 && rightPolarity === 1) {
-              // Abbremsen: links negativ, rechts positiv
-              particle.v -= accel;
-            }
-            // Sonst keine Änderung
+        const zoneStart = tube.x + tubeWidth;
+        const zoneEnd = nextX;
+        if (particle.x >= zoneStart && particle.x <= zoneEnd) {
+          const left = tube.polarity;
+          const right = i < tubes.length - 1 ? tubes[i + 1].polarity : null;
+          if (right !== null) {
+            const dist = Math.abs(nextX - zoneStart);
+            const accel = 0.05 * (100 / dist);
+            if (left === 1 && right === -1) particle.v += accel;
+            if (left === -1 && right === 1) particle.v -= accel;
           }
         }
-      });
-      // Auto-Polung über Frame-Zähler
+      }
+
       if (document.getElementById("autoPol").checked) {
         autoPolFrameCount++;
         if (autoPolFrameCount >= framesPerSwitch) {
-          tubes.forEach((tube) => {
-            tube.polarity *= -1;
-          });
+          tubes.forEach(t => t.polarity *= -1);
           autoPolFrameCount = 0;
         }
       }
+
       particle.x += particle.v;
-      // Allow negative velocity, but clamp to a minimum (e.g., -10)
       if (particle.v < -10) particle.v = -10;
+
       score = Math.floor(particle.v * 100);
       document.getElementById("score").textContent = score;
+
       if (particle.x > canvas.width - 20) {
         if (score > highscore) {
           localStorage.setItem("linacHighscore", score);
-          alert("🏆 Neuer Highscore: " + score);
           highscore = score;
+          document.getElementById("highscore").textContent = highscore;
         }
+        // if (score > 700) alert("L.K.: " + score);
         reset();
       }
     }
+
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Teilchenquelle
+      drawVelocityGraph();
+
       ctx.fillStyle = "magenta";
       ctx.fillRect(offsetX - 60, particle.y - 30, 40, 60);
-      // Röhren
-      tubes.forEach((tube) => {
+
+      tubes.forEach(tube => {
         ctx.fillStyle = tube.polarity === -1 ? "#cce5ff" : "#ffcccc";
         ctx.fillRect(tube.x, particle.y - tubeHeight / 2, tubeWidth, tubeHeight);
         ctx.strokeStyle = "black";
         ctx.strokeRect(tube.x, particle.y - tubeHeight / 2, tubeWidth, tubeHeight);
         ctx.fillStyle = "black";
         ctx.font = "20px sans-serif";
-        ctx.fillText(tube.polarity === 1 ? "+" : "-", tube.x + tubeWidth / 2 - 5, particle.y + 7);
+        ctx.fillText(tube.polarity === 1 ? "+" : "-", tube.x + 2, particle.y + 7);
       });
-      // Teilchen
+
       ctx.fillStyle = "red";
       ctx.beginPath();
       ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
@@ -353,56 +476,36 @@
       ctx.font = "14px sans-serif";
       ctx.fillText("+", particle.x - 4, particle.y + 5);
     }
+
     function loop() {
       update();
       draw();
       requestAnimationFrame(loop);
     }
-    function resetTubePolarities() {
-      // Setze Röhren auf Start-Polarität (abwechselnd +1/-1)
-      tubes.forEach((tube, i) => {
-        tube.polarity = i % 2 === 0 ? 1 : -1;
-      });
-    }
+
     function reset() {
       particle.x = offsetX - 20;
       particle.v = 1;
       score = 0;
+      velocityData = [];
       document.getElementById("score").textContent = score;
       highscore = parseInt(localStorage.getItem("linacHighscore")) || 0;
       document.getElementById("highscore").textContent = highscore;
-      // Nur wenn Auto-Polung aktiv ist, Phase zurücksetzen
+      // Röhren auf Start zurücksetzen, falls gewünscht
       if (document.getElementById("autoPol").checked) {
-        resetTubePolarities();
+        tubes.forEach((tube, i) => tube.polarity = i % 2 === 0 ? 1 : -1);
         autoPolFrameCount = 0;
       }
     }
-    function switchAllPolarities() {
-      tubes.forEach(tube => tube.polarity *= -1);
-    }
-    // Checkbox-Listener für Auto-Polung
-    document.getElementById("autoPol").addEventListener("change", function() {
-      if (this.checked) {
-        // startAutoPol();
-      } else {
-        // clearInterval(autoPolInterval);
-      }
-    });
-    // Slider-Listener für Frequenz
-    const autoPolFreqSlider = document.getElementById("autoPolFreq");
-    const autoPolFreqLabel = document.getElementById("autoPolFreqLabel");
-    autoPolFreqSlider.addEventListener("input", function() {
-      autoPolFreqLabel.textContent = parseFloat(this.value).toFixed(1) + " Hz";
-      autoPolFreq = parseFloat(this.value) || 2;
+
+    document.getElementById("autoPolFreq").addEventListener("input", function () {
+      autoPolFreq = parseFloat(this.value);
+      document.getElementById("autoPolFreqLabel").textContent = autoPolFreq.toFixed(1) + " Hz";
       framesPerSwitch = Math.round((1 / autoPolFreq) * 60 / 2);
-      autoPolFrameCount = 0; // Phase neu starten
+      autoPolFrameCount = 0;
     });
-    // Initialisiere Label und Frames
-    autoPolFreq = parseFloat(autoPolFreqSlider.value) || 2;
-    framesPerSwitch = Math.round((1 / autoPolFreq) * 60 / 2);
-    autoPolFrameCount = 0;
+
     loop();
-  </script>
   </script>
 </body>
 </html>
