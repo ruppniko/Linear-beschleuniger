@@ -3,53 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>LINAC Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: sans-serif;
       text-align: center;
       background: #f9f9f9;
-    }
-    canvas {
-      border: 1px solid #333;
-      background: #fff;
-      display: block;
-      margin: 20px auto;
-      touch-action: none; /* Verhindert Scrollen/Zoomen auf Touch-Geräten, damit Drag funktioniert */
-    }
-    h1 {
-      color: darkmagenta;
-    }
-    button {
-      padding: 8px 16px;
-      margin-top: 10px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <h1>🎮 Hochfrequenz-Linearbeschleuniger (LINAC) – Simulator</h1>
-  <p>Klicke auf eine Driftröhre, um ihre Polung zu wechseln, oder die position zu ändern!</p>
-  <canvas id="linacCanvas" width="1000" height="200"></canvas>
-  <p><strong>Geschwindigkeit:</strong> <span id="score">0</span> | <strong>Highscore:</strong> <span id="highscore">0</span></p>
-
-  <!-- Neue mobile Steuerungselemente -->
-  <div class="mobile-controls">
-    <button class="reset-btn" onclick="reset()">Reset</button>
-    <div class="center-controls">
-      <label style="font-size:1.1em;"><input type="checkbox" id="autoPol"> Auto-Polung</label>
-      <input type="range" id="autoPolFreq" value="2" min="0.1" max="5" step="0.1" style="width:100px; vertical-align:middle;">
-      <span id="autoPolFreqLabel">2.0 Hz</span>
-      <button class="addtube-btn" onclick="addTube()">＋ Röhre</button>
-    </div>
-    <button class="pol-btn" onclick="switchAllPolarities()">Polarität wechseln</button>
-  </div>
-  <button class="removetube-btn" onclick="removeTube()">–</button>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      background: #f9f9f9;
+      margin: 0;
+      padding-bottom: 120px;
     }
     canvas {
       border: 1px solid #333;
@@ -60,113 +21,129 @@
     }
     h1 {
       color: darkmagenta;
+      font-size: 1.5em;
+      margin: 10px;
+    }
+    p {
+      margin: 10px;
+      font-size: 1em;
     }
     button {
-      padding: 8px 16px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 8px;
+      font-size: 1.2em;
+      border-radius: 10px;
       border: none;
-      background: #e0e0e0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      padding: 14px 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       transition: background 0.2s;
     }
     button:active {
-      background: #d1c4e9;
+      background: #ddd;
     }
-    .mobile-controls {
+    .mobile-controls-wrapper {
       position: fixed;
-      left: 0; right: 0; bottom: 0;
-      width: 100vw;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
-      z-index: 100;
-      pointer-events: none;
-      height: 80px;
+      align-items: stretch;
       background: linear-gradient(to top, #f9f9f9 90%, transparent 100%);
+      padding: 10px;
+      box-sizing: border-box;
+      z-index: 1000;
     }
-    .mobile-controls > button,
-    .mobile-controls .center-controls,
-    .removetube-btn {
-      pointer-events: auto;
+    .left-controls, .right-controls {
+      width: 25%;
+      display: flex;
+      align-items: center;
+    }
+    .left-controls {
+      justify-content: flex-start;
+    }
+    .right-controls {
+      justify-content: flex-end;
+    }
+    .middle-controls {
+      width: 50%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+    .middle-controls label,
+    .middle-controls input[type="range"],
+    .middle-controls span,
+    .middle-controls button {
+      font-size: 0.8em;
+      padding: 6px 8px;
     }
     .reset-btn {
-      font-size: 1.3em;
-      font-weight: bold;
       background: #ffbdbd;
       color: #800;
-      width: 110px;
-      height: 60px;
-      margin: 10px 0 10px 10px;
-      align-self: flex-end;
+      width: 100%;
     }
     .pol-btn {
-      font-size: 1.1em;
-      font-weight: bold;
       background: #bbdefb;
       color: #01579b;
-      width: 140px;
-      height: 60px;
-      margin: 10px 10px 10px 0;
-      align-self: flex-end;
-    }
-    .center-controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1 1 0;
-      margin-bottom: 10px;
-    }
-    .center-controls label {
-      margin-bottom: 4px;
+      width: 100%;
     }
     .addtube-btn {
-      margin-top: 6px;
       background: #c8e6c9;
       color: #1b5e20;
-      font-size: 1.1em;
-      width: 110px;
     }
     .removetube-btn {
-      position: fixed;
-      right: 50%;
-      bottom: 90px;
-      transform: translateX(50%);
       background: #ffe082;
       color: #b28900;
-      font-size: 1.5em;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      z-index: 101;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     }
     @media (min-width: 700px) {
-      .mobile-controls, .removetube-btn {
-        position: static !important;
-        width: auto !important;
-        height: auto !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-        background: none !important;
-        display: inline-block !important;
-        transform: none !important;
-      }
-      .center-controls {
+      .mobile-controls-wrapper {
+        position: static;
         flex-direction: row;
-        gap: 10px;
-        margin-bottom: 0;
+        justify-content: center;
+        padding: 10px 0;
+        background: none;
       }
-      .reset-btn, .pol-btn, .addtube-btn, .removetube-btn {
+      .left-controls, .right-controls, .middle-controls {
         width: auto;
-        height: auto;
+        margin: 0 10px;
+      }
+      .middle-controls {
+        flex-direction: row;
+        gap: 6px;
+      }
+      .middle-controls label,
+      .middle-controls input,
+      .middle-controls span,
+      .middle-controls button {
         font-size: 1em;
-        border-radius: 8px;
+        padding: 6px 10px;
       }
     }
   </style>
+</head>
+<body>
+  <h1>🎮 Hochfrequenz-Linearbeschleuniger (LINAC) – Simulator</h1>
+  <p>Klicke oder tippe auf eine Driftröhre, um ihre Polung zu wechseln oder sie zu verschieben.</p>
+  <canvas id="linacCanvas" width="1000" height="200"></canvas>
+  <p><strong>Geschwindigkeit:</strong> <span id="score">0</span> | <strong>Highscore:</strong> <span id="highscore">0</span></p>
+
+  <div class="mobile-controls-wrapper">
+    <div class="left-controls">
+      <button class="reset-btn" onclick="reset()">🔄 Reset</button>
+    </div>
+    <div class="middle-controls">
+      <button class="addtube-btn" onclick="addTube()">＋</button>
+      <button class="removetube-btn" onclick="removeTube()">–</button>
+      <label><input type="checkbox" id="autoPol"> Auto</label>
+      <input type="range" id="autoPolFreq" value="2" min="0.1" max="5" step="0.1" style="width: 70px;">
+      <span id="autoPolFreqLabel">2.0 Hz</span>
+    </div>
+    <div class="right-controls">
+      <button class="pol-btn" onclick="switchAllPolarities()">⚡ Polarität</button>
+    </div>
+  </div>
 
   <script>
     // Initialisiere Röhren
