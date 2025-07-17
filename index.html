@@ -260,12 +260,11 @@ let touchStartX = null;
 let touchStartY = null;
 let touchMoved = false;
 
-// Maus: Drag/Click
+// --- Maus: Drag/Click wie in der alten Version ---
 canvas.addEventListener("mousedown", (e) => {
   const rect = canvas.getBoundingClientRect();
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
-  mouseMoved = false;
   for (let tube of tubes) {
     if (
       mx >= tube.x &&
@@ -274,7 +273,6 @@ canvas.addEventListener("mousedown", (e) => {
       my <= particle.y + tubeHeight / 2
     ) {
       draggingTube = tube;
-      mouseDownTube = tube;
       dragOffsetX = mx - tube.x;
       break;
     }
@@ -284,30 +282,19 @@ canvas.addEventListener("mousemove", (e) => {
   if (draggingTube) {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
-    if (Math.abs(mx - (draggingTube.x + dragOffsetX)) > 2) mouseMoved = true;
     draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
   }
 });
-canvas.addEventListener("mouseup", (e) => {
-  if (draggingTube && !mouseMoved) {
-    // Only toggle polarity if it was a click, not a drag
-    draggingTube.polarity *= -1;
-  }
+canvas.addEventListener("mouseup", () => {
   draggingTube = null;
-  mouseDownTube = null;
-  mouseMoved = false;
 });
 
-// Touch: single tap toggles polarity, drag moves tube
+// --- Touch: Drag/Drop wie in der alten Version ---
 canvas.addEventListener("touchstart", (e) => {
   const rect = canvas.getBoundingClientRect();
   const touch = e.touches[0];
   const mx = touch.clientX - rect.left;
   const my = touch.clientY - rect.top;
-  touchStartX = mx;
-  touchStartY = my;
-  touchMoved = false;
-  draggingTube = null;
   for (let tube of tubes) {
     if (
       mx >= tube.x &&
@@ -320,23 +307,38 @@ canvas.addEventListener("touchstart", (e) => {
       break;
     }
   }
+  e.preventDefault();
 }, { passive: false });
 canvas.addEventListener("touchmove", (e) => {
   if (draggingTube) {
     const rect = canvas.getBoundingClientRect();
     const touch = e.touches[0];
     const mx = touch.clientX - rect.left;
-    if (Math.abs(mx - touchStartX) > 5) touchMoved = true;
     draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
   }
+  e.preventDefault();
 }, { passive: false });
 canvas.addEventListener("touchend", (e) => {
-  if (!touchMoved && draggingTube) {
-    // Treat as tap: toggle polarity
-    draggingTube.polarity *= -1;
-  }
   draggingTube = null;
+  e.preventDefault();
 }, { passive: false });
+
+// --- Click: Toggle polarity on tap (like old version) ---
+canvas.addEventListener("click", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  for (let tube of tubes) {
+    if (
+      mx >= tube.x &&
+      mx <= tube.x + tubeWidth &&
+      my >= particle.y - tubeHeight / 2 &&
+      my <= particle.y + tubeHeight / 2
+    ) {
+      tube.polarity *= -1;
+    }
+  }
+});
     // --- Button-Handler ---
     document.getElementById("resetBtn").onclick = function() {
       reset();
