@@ -293,9 +293,9 @@ canvas.addEventListener("mouseup", () => {
 canvas.addEventListener("touchstart", (e) => {
   const rect = canvas.getBoundingClientRect();
   const touch = e.touches[0];
-  // Use pageX/pageY and adjust for scroll and canvas position
-  const mx = touch.pageX - rect.left - window.scrollX;
-  const my = touch.pageY - rect.top - window.scrollY;
+  // Use clientX/clientY for correct mapping to canvas
+  const mx = touch.clientX - rect.left;
+  const my = touch.clientY - rect.top;
   for (let tube of tubes) {
     if (
       mx >= tube.x &&
@@ -314,7 +314,7 @@ canvas.addEventListener("touchmove", (e) => {
   if (draggingTube) {
     const rect = canvas.getBoundingClientRect();
     const touch = e.touches[0];
-    const mx = touch.pageX - rect.left - window.scrollX;
+    const mx = touch.clientX - rect.left;
     draggingTube.x = Math.max(0, Math.min(canvas.width - tubeWidth, mx - dragOffsetX));
   }
   e.preventDefault();
