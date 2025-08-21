@@ -191,6 +191,9 @@
     <div class="graph-canvas-box">
       <canvas id="velocityGraph" width="680" height="100"></canvas>
     </div>
+    <div class="graph-canvas-box">
+      <canvas id="scoreHistGraph" width="680" height="100"></canvas>
+    </div>
     <div class="score-row"><strong>Geschwindigkeit:</strong> <span id="score">0</span> | <strong>Highscore:</strong> <span id="highscore">0</span></div>
     <div class="controls-row">
       <div class="tube-controls">
@@ -199,15 +202,20 @@
         <button class="removetube-btn" id="removeTubeBtn">–</button>
       </div>
       <label class="auto-label"><input type="checkbox" id="autoPol" class="auto-checkbox"> Auto</label>
-      <div class="slider-row">
+    <div class="slider-row">
         <input type="range" id="autoPolFreq" class="slider" value="2" min="0.1" max="5" step="0.1">
         <span class="slider-label" id="autoPolFreqLabel">2.0 Hz</span>
-      </div>
+    </div>
+    <div class="slider-row">
+        <input type="range" id="accelSlider" class="slider" value="0.05" min="0.01" max="0.2" step="0.01">
+        <span class="slider-label" id="accelSliderLabel">0.05 Beschleunigung</span>
+    </div>
       <label class="auto-label" style="margin-left:10px;"><input type="checkbox" id="showGraph" class="auto-checkbox"> Graph anzeigen</label>
     </div>
     <div class="main-buttons-row">
       <button class="circle-btn reset" id="resetBtn">Reset</button>
       <button class="circle-btn polarity" id="polBtn">Polarisation wechseln</button>
+      <button class="circle-btn" id="clearPlotBtn" style="border-color:#888;color:#888;">Plot löschen</button>
     </div>
   </div>
 
@@ -216,12 +224,14 @@
     const ctx = canvas.getContext("2d");
     const graph = document.getElementById("velocityGraph");
     const gtx = graph.getContext("2d");
+    const histGraph = document.getElementById("scoreHistGraph");
+    const htx = histGraph.getContext("2d");
 
     const offsetX = 100;
     const tubeWidth = 20;
     const gapWidth = 100;
     const tubeHeight = 80;
-    const tubeCount = 4;
+    const tubeCount = 3;
     let tubes = [];
 
     const particle = {
@@ -231,14 +241,34 @@
       v: 1
     };
 
-    let score = 0;
-    let highscore = parseInt(localStorage.getItem("linacHighscore")) || 0;
-    document.getElementById("highscore").textContent = highscore;
 
-    let velocityData = [];
-    let autoPolFreq = 2;
-    let autoPolFrameCount = 0;
-    let framesPerSwitch = Math.round((1 / autoPolFreq) * 60 / 2);
+let score = 0;
+let highscore = parseInt(localStorage.getItem("linacHighscore")) || 0;
+document.getElementById("highscore").textContent = highscore;
+
+// Load all scores from localStorage, or empty array
+let allScores = [];
+try {
+  allScores = JSON.parse(localStorage.getItem("linacAllScores")) || [];
+} catch (e) {
+  allScores = [];
+}
+window.allScores = allScores;
+
+// Load all (x, y) datapoints from localStorage, or empty array
+let allDataPoints = [];
+try {
+  allDataPoints = JSON.parse(localStorage.getItem("linacAllDataPoints")) || [];
+} catch (e) {
+  allDataPoints = [];
+}
+window.allDataPoints = allDataPoints;
+
+let velocityData = [];
+let autoPolFreq = 2;
+let autoPolFrameCount = 0;
+let framesPerSwitch = Math.round((1 / autoPolFreq) * 60 / 2);
+let particleAccel = 0.05;
 
 
     function initTubes() {
@@ -391,6 +421,16 @@ canvas.addEventListener("touchend", (e) => {
     document.getElementById("polBtn").onclick = function() {
       tubes.forEach(tube => tube.polarity *= -1);
     };
+    document.getElementById("clearPlotBtn").onclick = function() {
+      if (confirm("Alle gespeicherten Messungen und Punkte wirklich löschen?")) {
+        allScores = [];
+        allDataPoints = [];
+        localStorage.removeItem("linacAllScores");
+        localStorage.removeItem("linacAllDataPoints");
+        window.allScores = allScores;
+        window.allDataPoints = allDataPoints;
+      }
+    };
     document.getElementById("addTubeBtn").onclick = function() {
       // Füge eine neue Röhre rechts an
       const lastX = tubes.length > 0 ? tubes[tubes.length - 1].x + tubeWidth + gapWidth : offsetX;
@@ -455,6 +495,86 @@ canvas.addEventListener("touchend", (e) => {
       gtx.stroke();
     }
 
+    // --- Draw histogram and Gaussian fit of all scores ---
+    function drawScoreHistogram() {
+      htx.clearRect(0, 0, histGraph.width, histGraph.height);
+      // Draw axes
+      htx.strokeStyle = "#ccc";
+      htx.beginPath();
+      htx.moveTo(30, 10);
+      htx.lineTo(30, histGraph.height - 20);
+      htx.lineTo(histGraph.width - 10, histGraph.height - 20);
+      htx.stroke();
+
+      // If no points, show label
+      if (!window.allDataPoints || allDataPoints.length === 0) {
+        htx.font = "16px sans-serif";
+        htx.fillStyle = "#888";
+        htx.textAlign = "center";
+        htx.fillText("Noch keine Messungen", histGraph.width / 2, histGraph.height / 2);
+        return;
+      }
+
+      // Find x/y min/max for scaling
+      const xMin = Math.min(...allDataPoints.map(pt => pt.x));
+      const xMax = Math.max(...allDataPoints.map(pt => pt.x));
+      const yMax = Math.max(...allDataPoints.map(pt => pt.y), 1); // avoid division by zero
+      // Draw y-axis ticks and labels in 100er steps
+      htx.font = "12px sans-serif";
+      htx.fillStyle = "#333";
+      htx.textAlign = "right";
+      for (let yTick = 0; yTick <= yMax; yTick += 100) {
+        const py = histGraph.height - 20 - (yTick / (yMax + 0.01)) * (histGraph.height - 30);
+        htx.beginPath();
+        htx.moveTo(25, py);
+        htx.lineTo(30, py);
+        htx.strokeStyle = "#888";
+        htx.stroke();
+        htx.fillText(yTick.toString(), 25, py + 4);
+      }
+      // Draw x-axis ticks and labels in 100er steps
+      htx.textAlign = "center";
+      for (let xTick = Math.ceil(xMin / 100) * 100; xTick <= xMax; xTick += 100) {
+        const px = 30 + ((xTick - xMin) / (xMax - xMin + 0.01)) * (histGraph.width - 40);
+        htx.beginPath();
+        htx.moveTo(px, histGraph.height - 20);
+        htx.lineTo(px, histGraph.height - 15);
+        htx.strokeStyle = "#888";
+        htx.stroke();
+        htx.fillText(xTick.toString(), px, histGraph.height - 2);
+      }
+      // For y, use min 0, max yMax (scale to highest data point)
+      for (let pt of allDataPoints) {
+        // Map x to graph
+        const px = 30 + ((pt.x - xMin) / (xMax - xMin + 0.01)) * (histGraph.width - 40);
+        // Map y to graph (y=0 at bottom, y=yMax at top)
+        const py = histGraph.height - 20 - (pt.y / (yMax + 0.01)) * (histGraph.height - 30);
+        htx.beginPath();
+        htx.arc(px, py, 5, 0, 2 * Math.PI);
+        htx.fillStyle = "#e53935";
+        htx.globalAlpha = 0.85;
+        htx.fill();
+        htx.globalAlpha = 1.0;
+        htx.strokeStyle = "#b71c1c";
+        htx.stroke();
+      }
+
+      // X axis label
+      htx.font = "14px sans-serif";
+      htx.fillStyle = "#333";
+      htx.textAlign = "right";
+      htx.fillText("Geschwindigkeit (Score)", histGraph.width - 10, histGraph.height - 2);
+      // Y axis label
+      htx.save();
+      htx.translate(10, histGraph.height / 2);
+      htx.rotate(-Math.PI / 2);
+      htx.font = "14px sans-serif";
+      htx.fillStyle = "#333";
+      htx.textAlign = "center";
+      htx.fillText("Photolumineszenz", 0, 0);
+      htx.restore();
+    }
+
     function update() {
       velocityData.push(particle.v);
       if (velocityData.length > graph.width - 30) velocityData.shift();
@@ -469,7 +589,7 @@ canvas.addEventListener("touchend", (e) => {
           const right = i < tubes.length - 1 ? tubes[i + 1].polarity : null;
           if (right !== null) {
             const dist = Math.abs(nextX - zoneStart);
-            const accel = 0.05 * (100 / dist);
+            const accel = particleAccel * (100 / dist);
             if (left === 1 && right === -1) particle.v += accel;
             if (left === -1 && right === 1) particle.v -= accel;
           }
@@ -487,10 +607,27 @@ canvas.addEventListener("touchend", (e) => {
       particle.x += particle.v;
       if (particle.v < -10) particle.v = -10;
 
+      // Reset if particle flies out to the left
+      if (particle.x < 0) {
+        reset();
+        return;
+      }
+
       score = Math.floor(particle.v * 100);
       document.getElementById("score").textContent = score;
 
       if (particle.x > canvas.width - 20) {
+        // Save all scores
+        allScores.push(score);
+        localStorage.setItem("linacAllScores", JSON.stringify(allScores));
+        window.allScores = allScores;
+        // Save (velocity, exp(-((velocity-500)^2/100)) + noise) point
+        // --- Noise is added to the z data (photoluminescence) here ---
+        let noise = (Math.random() - 0.5) * 10; // small random noise
+        let yval = Math.exp(-((score - 500) ** 2) / (2 * 100 ** 2)) * (100 + noise);
+        allDataPoints.push({ x: score, y: yval });
+        localStorage.setItem("linacAllDataPoints", JSON.stringify(allDataPoints));
+        window.allDataPoints = allDataPoints;
         if (score > highscore) {
           localStorage.setItem("linacHighscore", score);
           highscore = score;
@@ -504,6 +641,7 @@ canvas.addEventListener("touchend", (e) => {
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawVelocityGraph();
+      drawScoreHistogram();
 
       ctx.fillStyle = "magenta";
       ctx.fillRect(offsetX - 60, particle.y - 30, 40, 60);
@@ -554,8 +692,13 @@ canvas.addEventListener("touchend", (e) => {
       framesPerSwitch = Math.round((1 / autoPolFreq) * 60 / 2);
       autoPolFrameCount = 0;
     });
+    document.getElementById("accelSlider").addEventListener("input", function () {
+      particleAccel = parseFloat(this.value);
+      document.getElementById("accelSliderLabel").textContent = particleAccel.toFixed(2) + " Beschleunigung";
+    });
 
     loop();
   </script>
 </body>
 </html>
+
