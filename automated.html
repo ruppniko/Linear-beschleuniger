@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>LINAC Game - Erweiterte Version</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+    }
+    canvas {
+      border: 1px solid #333;
+      background: #fff;
+      display: block;
+      margin: 20px auto;
+    }
+    h1 {
+      color: darkblue;
+    }
+    button, input {
+      padding: 6px 10px;
+      margin: 5px;
+      font-size: 14px;
+    }
+    .controls {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔧 LINAC Konfigurierbar</h1>
+  <p>Klicke auf Röhren, um die Polung zu ändern. Passe die Positionen und aktiviere Auto-Polung!</p>
+  <canvas id="linacCanvas" width="1000" height="200"></canvas>
+  <p><strong>Punkte:</strong> <span id="score">0</span> | <strong>Highscore:</strong> <span id="highscore">0</span></p>
+
+  <div class="controls">
+    <button onclick="reset()">Reset</button>
+    <label><input type="checkbox" id="autoPol"> Auto-Polung aktivieren (2 Hz)</label><br>
+    <label>Röhren-Positionen (Pixel, durch Komma getrennt):<br>
+      <input type="text" id="tubePositions" value="100,200,300,400,500,600" size="50">
+      <button onclick="updateTubePositions()">Setzen</button>
+    </label>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("linacCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const tubeWidth = 40;
+    const tubeHeight = 80;
+    let tubes = [];
+    let offsetX = 60;
+    let autoPoling = false;
+
+    let particle = {
+      x: offsetX - 20,
+      y: canvas.height / 2,
+      radius: 10,
+      v: 1
+    };
+
+    let score = 0;
+    let highscore = localStorage.getItem("linacHighscore") || 0;
+    document.getElementById("highscore").textContent = highscore;
+
+    function createTubes(positions) {
+      tubes = positions.map((pos, i) => ({
+        x: parseInt(pos),
+        polarity: i % 2 === 0 ? -1 : 1
+      }));
+    }
+
+    createTubes(document.getElementById("tubePositions").value.split(","));
+
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      tubes.forEach((tube) => {
+        if (
+          mx >= tube.x &&
+          mx <= tube.x + tubeWidth &&
+          my >= particle.y - tubeHeight / 2 &&
+          my <= particle.y + tubeHeight / 2
+        ) {
+          tube.polarity *= -1;
+        }
+      });
+    });
+
+    function updateTubePositions() {
+      const values = document.getElementById("tubePositions").value.split(",");
+      createTubes(values);
+    }
+
+    function update() {
+      autoPoling = document.getElementById("autoPol").checked;
+
+      tubes.forEach((tube, i) => {
+        const nextX = i < tubes.length - 1 ? tubes[i + 1].x : canvas.width;
+        const accelZoneStart = tube.x + tubeWidth;
+        const accelZoneEnd = nextX;
+
+        if (particle.x >= accelZoneStart && particle.x <= accelZoneEnd) {
+          const fieldPolarity = tube.polarity;
+          const force = fieldPolarity === 1 ? -0.1 : 0.1;
+          particle.v += force;
+        }
+      });
+
+      particle.x += particle.v;
+      if (particle.v < 0) particle.v = 0;
+
+      score = Math.floor(particle.v * 100);
+      document.getElementById("score").textContent = score;
+
+      if (particle.x > canvas.width - 20) {
+        if (score > highscore) {
+          localStorage.setItem("linacHighscore", score);
+          alert("🏆 Neuer Highscore: " + score);
+        } else {
+          alert("🛑 Spiel beendet! Dein Score: " + score);
+        }
+        reset();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "magenta";
+      ctx.fillRect(offsetX - 50, particle.y - 30, 30, 60);
+
+      tubes.forEach((tube) => {
+        ctx.fillStyle = tube.polarity === -1 ? "#cce5ff" : "#ffcccc";
+        ctx.fillRect(tube.x, particle.y - tubeHeight / 2, tubeWidth, tubeHeight);
+        ctx.strokeStyle = "black";
+        ctx.strokeRect(tube.x, particle.y - tubeHeight / 2, tubeWidth, tubeHeight);
+
+        ctx.fillStyle = "black";
+        ctx.font = "18px sans-serif";
+        ctx.fillText(tube.polarity === 1 ? "+" : "-", tube.x + tubeWidth / 2 - 5, particle.y + 6);
+      });
+
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.fillStyle = "white";
+      ctx.font = "14px sans-serif";
+      ctx.fillText("+", particle.x - 4, particle.y + 5);
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function reset() {
+      particle.x = offsetX - 20;
+      particle.v = 1;
+      score = 0;
+      document.getElementById("score").textContent = score;
+      document.getElementById("highscore").textContent = localStorage.getItem("linacHighscore");
+    }
+
+    setInterval(() => {
+      if (document.getElementById("autoPol").checked) {
+        tubes.forEach((tube) => {
+          tube.polarity *= -1;
+        });
+      }
+    }, 500); // 2 Hz => alle 500 ms
+
+    loop();
+  </script>
+</body>
+</html>
